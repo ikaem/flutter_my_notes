@@ -17,7 +17,6 @@ void main() {
     // home: const LoginView()
     home: const HomePage(),
     // home: const RegisterView(),
-    // home: const LoginView()
   ));
 }
 
