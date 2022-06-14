@@ -57,9 +57,14 @@ class _LoginViewState extends State<LoginView> {
                     .signInWithEmailAndPassword(
                         email: email, password: password);
                 print("user: $userCredential");
-
                 Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => HomePage()));
+                    .pushNamedAndRemoveUntil("/", (route) => false);
+
+                // Navigator.of(context)
+                //     .push(MaterialPageRoute(builder: (context) => HomePage()));
+
+                // Navigator.of(context)
+                //     .pushNamedAndRemoveUntil("/notes", (route) => false);
               } on FirebaseAuthException catch (e) {
                 final code = e.code;
                 print("e fore firebase auth exception: ${e.code}");
