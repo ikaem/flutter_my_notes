@@ -4,6 +4,8 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import "dart:developer" as devtools show log;
 
+import 'package:mynotes/constants/routes.dart';
+
 enum MenuAction { logout }
 
 class NotesView extends StatefulWidget {
@@ -31,7 +33,7 @@ class _NotesViewState extends State<NotesView> {
               if (result) {
                 await FirebaseAuth.instance.signOut();
                 Navigator.of(context)
-                    .pushNamedAndRemoveUntil("/", (route) => false);
+                    .pushNamedAndRemoveUntil(homeRoute, (route) => false);
               }
               break;
             default:

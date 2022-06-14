@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/main.dart';
+
+import '../utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -62,7 +65,7 @@ class _LoginViewState extends State<LoginView> {
                 //     .pushNamedAndRemoveUntil("/notes", (route) => false);
                 // https://stackoverflow.com/questions/69466478/waiting-asynchronously-for-navigator-push-linter-warning-appears-use-build
                 // https://stackoverflow.com/questions/68871880/do-not-use-buildcontexts-across-async-gaps
-                navigator.pushNamedAndRemoveUntil("/notes", (route) => false);
+                navigator.pushNamedAndRemoveUntil(notesRoute, (route) => false);
 
                 // Navigator.of(context)
                 //     .push(MaterialPageRoute(builder: (context) => HomePage()));
@@ -76,11 +79,14 @@ class _LoginViewState extends State<LoginView> {
                 switch (code) {
                   case "user-not-found":
                     print("user not found");
+                    showErrorDialog(context, "This user does not exist");
                     break;
                   case "wrong-password":
                     print("wrong password");
+                    showErrorDialog(context, "Incorrect credentials");
                     break;
                   default:
+                    showErrorDialog(context, "Contact us, please");
                     print("some error: $code");
                 }
               } catch (e) {
@@ -89,6 +95,7 @@ class _LoginViewState extends State<LoginView> {
                 }
                 print("error happened: $e");
                 print("error code: ${e.runtimeType}"); //  FirebaseAuthException
+                showErrorDialog(context, "Contact us, please");
               }
             },
             child: const Text("Login"),
@@ -97,7 +104,7 @@ class _LoginViewState extends State<LoginView> {
               onPressed: () {
                 // Navigator.of(context).push()
                 Navigator.of(context)
-                    .pushNamedAndRemoveUntil("/register", (route) => false);
+                    .pushNamedAndRemoveUntil(registerRoute, (route) => false);
               },
               child: Text("Register?"))
         ],
