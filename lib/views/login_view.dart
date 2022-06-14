@@ -51,14 +51,18 @@ class _LoginViewState extends State<LoginView> {
             onPressed: () async {
               final email = _emailController.text;
               final password = _passwordController.text;
+              final navigator = Navigator.of(context);
 
               try {
                 final userCredential = await FirebaseAuth.instance
                     .signInWithEmailAndPassword(
                         email: email, password: password);
                 print("user: $userCredential");
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil("/", (route) => false);
+                // Navigator.of(context)
+                //     .pushNamedAndRemoveUntil("/notes", (route) => false);
+                // https://stackoverflow.com/questions/69466478/waiting-asynchronously-for-navigator-push-linter-warning-appears-use-build
+                // https://stackoverflow.com/questions/68871880/do-not-use-buildcontexts-across-async-gaps
+                navigator.pushNamedAndRemoveUntil("/notes", (route) => false);
 
                 // Navigator.of(context)
                 //     .push(MaterialPageRoute(builder: (context) => HomePage()));
