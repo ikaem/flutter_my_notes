@@ -61,6 +61,15 @@ class _LoginViewState extends State<LoginView> {
                     .signInWithEmailAndPassword(
                         email: email, password: password);
                 print("user: $userCredential");
+
+                final user = FirebaseAuth.instance.currentUser;
+
+                if (user?.emailVerified == false) {
+                  // send user to other page
+                  navigator.pushNamedAndRemoveUntil(
+                      verifyEmailRoute, (route) => false);
+                  return;
+                }
                 // Navigator.of(context)
                 //     .pushNamedAndRemoveUntil("/notes", (route) => false);
                 // https://stackoverflow.com/questions/69466478/waiting-asynchronously-for-navigator-push-linter-warning-appears-use-build

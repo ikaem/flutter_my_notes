@@ -27,6 +27,7 @@ void main() {
       loginRoute: (context) => LoginView(),
       registerRoute: (context) => RegisterView(),
       notesRoute: (context) => NotesView(),
+      verifyEmailRoute: (context) => VerifEmailView(),
     },
   ));
 }
