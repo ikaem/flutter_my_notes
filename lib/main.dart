@@ -1,7 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:mynotes/firebase_options.dart';
+import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/views/login_view.dart';
 import 'package:mynotes/views/notes_view.dart';
 import 'package:mynotes/views/register_view.dart';
@@ -23,11 +24,11 @@ void main() {
     // home: const HomePage(),
     // home: const RegisterView(),
     routes: {
-      homeRoute: (context) => HomePage(),
-      loginRoute: (context) => LoginView(),
-      registerRoute: (context) => RegisterView(),
-      notesRoute: (context) => NotesView(),
-      verifyEmailRoute: (context) => VerifEmailView(),
+      homeRoute: (context) => const HomePage(),
+      loginRoute: (context) => const LoginView(),
+      registerRoute: (context) => const RegisterView(),
+      notesRoute: (context) => const NotesView(),
+      verifyEmailRoute: (context) => const VerifEmailView(),
     },
   ));
 }
@@ -38,8 +39,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-        future: Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform),
+        future: AuthService.firebase().initialize(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Text("There was error with connecting to Firebase");
@@ -48,9 +48,11 @@ class HomePage extends StatelessWidget {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
               // gettomg current user
-              final auth = FirebaseAuth.instance;
-              final currentUser = auth.currentUser;
-              final isEmailVerified = currentUser?.emailVerified ?? false;
+              // final auth = FirebaseAuth.instance;
+              // final currentUser = auth.currentUser;
+              final auth = AuthService.firebase();
+              final currentUser = AuthService.firebase().currentUser;
+              final isEmailVerified = currentUser?.isEmailVerified ?? false;
 
               print("this is current user: ${currentUser}");
 

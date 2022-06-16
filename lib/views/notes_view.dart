@@ -1,12 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import "dart:developer" as devtools show log;
 
 import 'package:mynotes/constants/routes.dart';
-
-enum MenuAction { logout }
+import 'package:mynotes/enums/menu_action.dart';
+import 'package:mynotes/services/auth/auth_service.dart';
 
 class NotesView extends StatefulWidget {
   const NotesView({Key? key}) : super(key: key);
@@ -23,6 +23,7 @@ class _NotesViewState extends State<NotesView> {
         PopupMenuButton<MenuAction>(onSelected: (value) async {
           print(value);
           devtools.log(value.name);
+          final navigator = Navigator.of(context);
 
           switch (value) {
             case MenuAction.logout:
@@ -31,9 +32,9 @@ class _NotesViewState extends State<NotesView> {
               devtools.log("result: $result");
 
               if (result) {
-                await FirebaseAuth.instance.signOut();
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil(homeRoute, (route) => false);
+                // await FirebaseAuth.instance.signOut();
+                await AuthService.firebase().logout();
+                navigator.pushNamedAndRemoveUntil(homeRoute, (route) => false);
               }
               break;
             default:
@@ -41,7 +42,7 @@ class _NotesViewState extends State<NotesView> {
           }
         }, itemBuilder: (context) {
           return [
-            PopupMenuItem(
+            const PopupMenuItem(
               value: MenuAction.logout,
               child: Text("Logout"),
               // onTap: () {
