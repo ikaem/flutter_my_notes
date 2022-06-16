@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/dev/dev_service.dart';
 
 import '../utilities/show_error_dialog.dart';
 
@@ -65,6 +66,7 @@ class _LoginViewState extends State<LoginView> {
 
                 // final user = FirebaseAuth.instance.currentUser;
                 final user = AuthService.firebase().currentUser;
+                DevService().log("hello");
 
                 if (user?.isEmailVerified == false) {
                   // send user to other page
