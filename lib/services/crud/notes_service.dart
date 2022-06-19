@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:mynotes/services/crud/notes_exceptions.dart';
 import "package:path/path.dart" show join;
@@ -7,6 +9,15 @@ import "package:sqflite/sqflite.dart" show Database, openDatabase;
 
 class NotesService {
   Database? _db;
+  List<DatabaseNote> _notes = [];
+  final _notesStreamController =
+      StreamController<List<DatabaseNote>>.broadcast();
+
+  Future<void> _cacheNotes() async {
+    final allNotes = await getAllNotes();
+    _notes = allNotes;
+    _notesStreamController.add(_notes);
+  }
 
   Database _getDatabaseOrThrow() {
     final db = _db;
@@ -29,6 +40,9 @@ class NotesService {
 
       await db.execute(createUserTable);
       await db.execute(createNoteTable);
+
+      // caching all notes
+      await _cacheNotes();
     } on MissingPlatformDirectoryException {
       throw UnableToGetDocumentsDirectoryException();
     }
@@ -97,12 +111,17 @@ class NotesService {
       nIsSyncedColumn: 1,
     });
 
-    return DatabaseNote(
+    final note = DatabaseNote(
       id: noteId,
       userId: owner.id,
       text: text,
       isSyncedWithCloud: true,
     );
+
+    _notes.add(note);
+    _notesStreamController.add(_notes);
+
+    return note;
   }
 
   Future<void> deleteNote({required int id}) async {
@@ -114,11 +133,17 @@ class NotesService {
     );
 
     if (deletedCount == 0) throw CouldNotDeleteNoteException();
+
+    _notes.removeWhere((note) => note.id == id);
+    _notesStreamController.add(_notes);
   }
 
   Future<int> deleteAllNotes() async {
     final db = _getDatabaseOrThrow();
     final deletedCount = await db.delete(noteTableName);
+
+    _notes = [];
+    _notesStreamController.add(_notes);
 
     return deletedCount;
   }
@@ -135,7 +160,13 @@ class NotesService {
 
     if (noteResponse.isEmpty) throw CouldNotFindNoteException();
 
-    return DatabaseNote.fromRow(noteResponse.first);
+    final note = DatabaseNote.fromRow(noteResponse.first);
+    final noteIndex = _notes.indexWhere((element) => element.id == note.id);
+
+    noteIndex == 0 ? _notes.add(note) : _notes[noteIndex] = note;
+    _notesStreamController.add(_notes);
+
+    return note;
   }
 
   Future<List<DatabaseNote>> getAllNotes() async {
@@ -164,7 +195,22 @@ class NotesService {
 
     if (updatesCount == 0) throw CouldNotUpdateNoteException();
 
-    return await getNote(id: note.id);
+// get note already updates the cache
+    final updatedNote = await getNote(id: note.id);
+
+    return updatedNote;
+  }
+
+  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+    try {
+      final user = await getUser(email: email);
+      return user;
+    } on CouldNotFindUserException {
+      final createdUser = await createUser(email: email);
+      return createdUser;
+    } catch (e) {
+      rethrow;
+    }
   }
 }
 
