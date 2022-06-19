@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:mynotes/services/crud/notes_exceptions.dart';
+import 'package:mynotes/services/dev/dev_service.dart';
 import "package:path/path.dart" show join;
 import "package:path_provider/path_provider.dart"
     show MissingPlatformDirectoryException, getApplicationDocumentsDirectory;
@@ -12,6 +13,14 @@ class NotesService {
   List<DatabaseNote> _notes = [];
   final _notesStreamController =
       StreamController<List<DatabaseNote>>.broadcast();
+
+// making the class a singleton
+  static final NotesService _shared = NotesService._sharedInstance();
+  NotesService._sharedInstance();
+  factory NotesService() => _shared;
+
+  Stream<List<DatabaseNote>> get allNotesStream =>
+      _notesStreamController.stream;
 
   Future<void> _cacheNotes() async {
     final allNotes = await getAllNotes();
@@ -58,6 +67,7 @@ class NotesService {
   }
 
   Future<void> deleteUser({required String email}) async {
+    await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
 
     final deletedCount = await db.delete(userTableName,
@@ -67,6 +77,8 @@ class NotesService {
   }
 
   Future<DatabaseUser> createUser({required String email}) async {
+    await _ensureDbIsOpen();
+
     // first we want to check if the user exists
     final db = _getDatabaseOrThrow();
     final existingUserResult = await db.query(userTableName,
@@ -81,6 +93,8 @@ class NotesService {
   }
 
   Future<DatabaseUser> getUser({required String email}) async {
+    await _ensureDbIsOpen();
+
     final db = _getDatabaseOrThrow();
 
     final results = await db.query(
@@ -96,6 +110,8 @@ class NotesService {
   }
 
   Future<DatabaseNote> createNote({required DatabaseUser owner}) async {
+    await _ensureDbIsOpen();
+
     final db = _getDatabaseOrThrow();
 
     // i mean, we could have found it via id, too. but i guess this is good for learning purposes
@@ -125,6 +141,8 @@ class NotesService {
   }
 
   Future<void> deleteNote({required int id}) async {
+    await _ensureDbIsOpen();
+
     final db = _getDatabaseOrThrow();
     final deletedCount = await db.delete(
       noteTableName,
@@ -139,6 +157,8 @@ class NotesService {
   }
 
   Future<int> deleteAllNotes() async {
+    await _ensureDbIsOpen();
+
     final db = _getDatabaseOrThrow();
     final deletedCount = await db.delete(noteTableName);
 
@@ -149,6 +169,8 @@ class NotesService {
   }
 
   Future<DatabaseNote> getNote({required int id}) async {
+    await _ensureDbIsOpen();
+
     final db = _getDatabaseOrThrow();
 
     final noteResponse = await db.query(
@@ -170,6 +192,8 @@ class NotesService {
   }
 
   Future<List<DatabaseNote>> getAllNotes() async {
+    await _ensureDbIsOpen();
+
     final db = _getDatabaseOrThrow();
 
     final notesResponse = await db.query(noteTableName);
@@ -185,6 +209,8 @@ class NotesService {
     required DatabaseNote note,
     required String text,
   }) async {
+    await _ensureDbIsOpen();
+
     final db = _getDatabaseOrThrow();
     await getNote(id: note.id);
 
@@ -202,6 +228,9 @@ class NotesService {
   }
 
   Future<DatabaseUser> getOrCreateUser({required String email}) async {
+    DevService().log("here: $_db");
+    await _ensureDbIsOpen();
+
     try {
       final user = await getUser(email: email);
       return user;
@@ -210,6 +239,15 @@ class NotesService {
       return createdUser;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<void> _ensureDbIsOpen() async {
+    try {
+      await open();
+    } on DatabaseAlreadyOpenException {
+      // empty
+      // this will catch oepns thrown error
     }
   }
 }
