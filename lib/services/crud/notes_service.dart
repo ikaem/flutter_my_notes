@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:mynotes/extensions/list/filter.dart';
 import 'package:mynotes/services/crud/notes_exceptions.dart';
 import 'package:mynotes/services/dev/dev_service.dart';
 import "package:path/path.dart" show join;
@@ -11,6 +12,7 @@ import "package:sqflite/sqflite.dart" show Database, openDatabase;
 class NotesService {
   Database? _db;
   List<DatabaseNote> _notes = [];
+  DatabaseUser? _user;
   late final StreamController<List<DatabaseNote>> _notesStreamController;
 
 // making the class a singleton
@@ -24,7 +26,12 @@ class NotesService {
   factory NotesService() => _shared;
 
   Stream<List<DatabaseNote>> get allNotesStream =>
-      _notesStreamController.stream;
+      // _notesStreamController.stream;
+      _notesStreamController.stream.filter((item) {
+        final user = _user;
+        if (user == null) throw UserNotSetBeforeReadingNotesException();
+        return item.userId == user.id;
+      });
 
   Future<void> _cacheNotes() async {
     final allNotes = await getAllNotes();
@@ -189,6 +196,9 @@ class NotesService {
     final note = DatabaseNote.fromRow(noteResponse.first);
     final noteIndex = _notes.indexWhere((element) => element.id == note.id);
 
+    // DevService().log("this is note: $note");
+    // DevService().log("this is noteIndex: $noteIndex");
+
     noteIndex < 0 ? _notes.add(note) : _notes[noteIndex] = note;
     _notesStreamController.add(_notes);
 
@@ -219,12 +229,16 @@ class NotesService {
     await getNote(id: note.id);
 
     // print("notes: $_notes");
-    print("notes");
+    // print("notes");
 
-    final updatesCount = await db.update(noteTableName, {
-      nTextColumn: text,
-      nIsSyncedColumn: 0,
-    });
+    final updatesCount = await db.update(
+        noteTableName,
+        {
+          nTextColumn: text,
+          nIsSyncedColumn: 0,
+        },
+        where: "id = ?",
+        whereArgs: [note.id]);
 
     if (updatesCount == 0) throw CouldNotUpdateNoteException();
 
@@ -234,15 +248,20 @@ class NotesService {
     return updatedNote;
   }
 
-  Future<DatabaseUser> getOrCreateUser({required String email}) async {
+  Future<DatabaseUser> getOrCreateUser({
+    required String email,
+    bool setAsCurrentUser = true,
+  }) async {
     DevService().log("here: $_db");
     await _ensureDbIsOpen();
 
     try {
       final user = await getUser(email: email);
+      if (setAsCurrentUser) _user = user;
       return user;
     } on CouldNotFindUserException {
       final createdUser = await createUser(email: email);
+      if (setAsCurrentUser) _user = createdUser;
       return createdUser;
     } catch (e) {
       rethrow;

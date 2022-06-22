@@ -25,8 +25,8 @@ class _EditNoteViewState extends State<EditNoteView> {
     // if (widgetNote != null) {
     if (widgetNoteId != null) {
       final widgetNote = await _notesService.getNote(id: widgetNoteId);
-      print("widgetNote: ${widgetNote.text}");
-      DevService().log("this is service: $widgetNote");
+      // print("widgetNote: ${widgetNote.text}");
+      // DevService().log("this is service: $widgetNote");
       // print("widgetNote: $widgetNote");
       // note sure really if we should be setting _note state here with found note, since future builder will do that
       _note = widgetNote;
