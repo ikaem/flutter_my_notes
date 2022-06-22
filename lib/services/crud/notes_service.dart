@@ -11,12 +11,16 @@ import "package:sqflite/sqflite.dart" show Database, openDatabase;
 class NotesService {
   Database? _db;
   List<DatabaseNote> _notes = [];
-  final _notesStreamController =
-      StreamController<List<DatabaseNote>>.broadcast();
+  late final StreamController<List<DatabaseNote>> _notesStreamController;
 
 // making the class a singleton
   static final NotesService _shared = NotesService._sharedInstance();
-  NotesService._sharedInstance();
+  NotesService._sharedInstance() {
+    _notesStreamController =
+        StreamController<List<DatabaseNote>>.broadcast(onListen: () {
+      _notesStreamController.sink.add(_notes);
+    });
+  }
   factory NotesService() => _shared;
 
   Stream<List<DatabaseNote>> get allNotesStream =>
@@ -185,7 +189,7 @@ class NotesService {
     final note = DatabaseNote.fromRow(noteResponse.first);
     final noteIndex = _notes.indexWhere((element) => element.id == note.id);
 
-    noteIndex == 0 ? _notes.add(note) : _notes[noteIndex] = note;
+    noteIndex < 0 ? _notes.add(note) : _notes[noteIndex] = note;
     _notesStreamController.add(_notes);
 
     return note;
@@ -213,6 +217,9 @@ class NotesService {
 
     final db = _getDatabaseOrThrow();
     await getNote(id: note.id);
+
+    // print("notes: $_notes");
+    print("notes");
 
     final updatesCount = await db.update(noteTableName, {
       nTextColumn: text,
