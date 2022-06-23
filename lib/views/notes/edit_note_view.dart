@@ -2,9 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/cloud/cloud_note.dart';
+import 'package:mynotes/services/cloud/cloud_storage_service.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
 import 'package:mynotes/services/dev/dev_service.dart';
+import 'package:mynotes/utilities/dialogs/cannot_share_empty_note_dialog.dart';
 import 'package:mynotes/utilities/generics/get_argument.dart';
+import 'package:share_plus/share_plus.dart';
 
 class EditNoteView extends StatefulWidget {
   const EditNoteView({Key? key}) : super(key: key);
@@ -14,13 +18,17 @@ class EditNoteView extends StatefulWidget {
 }
 
 class _EditNoteViewState extends State<EditNoteView> {
-  DatabaseNote? _note;
-  late final NotesService _notesService;
+  // DatabaseNote? _note;
+  CloudNote? _note;
+  // late final NotesService _notesService;
+  late final CloudStorageService _notesService;
   late final TextEditingController _textController;
 
-  Future<DatabaseNote> createOrGetExistingNote(BuildContext context) async {
+  // Future<DatabaseNote> createOrGetExistingNote(BuildContext context) async {
+  Future<CloudNote> createOrGetExistingNote(BuildContext context) async {
     // final widgetNote = context.getArgument<DatabaseNote>();
-    final widgetNoteId = context.getArgument<int>();
+    // final widgetNoteId = context.getArgument<int>();
+    final widgetNoteId = context.getArgument<String>();
 
     // if (widgetNote != null) {
     if (widgetNoteId != null) {
@@ -40,9 +48,10 @@ class _EditNoteViewState extends State<EditNoteView> {
 
     final currentUser = AuthService.firebase().currentUser!;
     final email = currentUser.email;
-    final owner = await _notesService.getUser(email: email);
+    // final owner = await _notesService.getUser(email: email);
 
-    final newNote = await _notesService.createNote(owner: owner);
+    // final newNote = await _notesService.createNote(owner: owner);
+    final newNote = await _notesService.createNewNote(ownerId: currentUser.id);
     // print("called");
     _note = newNote;
     // note sure really if we should be setting _note state here with new note
@@ -53,7 +62,8 @@ class _EditNoteViewState extends State<EditNoteView> {
   Future<void> _deleteNoteIfTextIsEmpty() async {
     final note = _note;
     if (_textController.text.isEmpty && note != null) {
-      await _notesService.deleteNote(id: note.id);
+      // await _notesService.deleteNote(id: note.id);
+      await _notesService.deleteNote(documentId: note.documentId);
       return;
     }
   }
@@ -62,7 +72,8 @@ class _EditNoteViewState extends State<EditNoteView> {
     final note = _note;
     final text = _textController.text;
     if (_textController.text.isNotEmpty && note != null) {
-      await _notesService.updateNote(note: note, text: text);
+      // await _notesService.updateNote(note: note, text: text);
+      await _notesService.updateNote(documentId: note.documentId, text: text);
       return;
     }
   }
@@ -73,7 +84,8 @@ class _EditNoteViewState extends State<EditNoteView> {
     if (note == null) return;
 
     final text = _textController.text;
-    await _notesService.updateNote(note: note, text: text);
+    // await _notesService.updateNote(note: note, text: text);
+    await _notesService.updateNote(documentId: note.documentId, text: text);
   }
 
   void _setupTextControllerListener() {
@@ -89,7 +101,8 @@ class _EditNoteViewState extends State<EditNoteView> {
 
     _textController = TextEditingController();
     // this is singleton anyhow
-    _notesService = NotesService();
+    // _notesService = NotesService();
+    _notesService = CloudStorageService();
 
     super.initState();
   }
@@ -108,10 +121,25 @@ class _EditNoteViewState extends State<EditNoteView> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Your note"),
+        actions: <Widget>[
+          IconButton(
+              onPressed: () async {
+                final note = _textController.text;
+                if (note == null || note.isEmpty) {
+                  await showCannotShareEmptyNoteDialog(context);
+                  return;
+                }
+
+                // here we share
+                await Share.share(note);
+              },
+              icon: Icon(Icons.share))
+        ],
       ),
       body: FutureBuilder(
           future: createOrGetExistingNote(context),
-          builder: (context, AsyncSnapshot<DatabaseNote> snapshot) {
+          // builder: (context, AsyncSnapshot<DatabaseNote> snapshot) {
+          builder: (context, AsyncSnapshot<CloudNote> snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
                 // prolly not good to do this here
