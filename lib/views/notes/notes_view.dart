@@ -2,11 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import "dart:developer" as devtools show log;
 
 import 'package:mynotes/constants/routes.dart';
 import 'package:mynotes/enums/menu_action.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
+import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
+import 'package:mynotes/services/auth/bloc/auth_event.dart';
 import 'package:mynotes/services/cloud/cloud_note.dart';
 import 'package:mynotes/services/cloud/cloud_storage_service.dart';
 import 'package:mynotes/services/crud/notes_service.dart';
@@ -43,6 +46,7 @@ class _NotesViewState extends State<NotesView> {
           print(value);
           devtools.log(value.name);
           final navigator = Navigator.of(context);
+          final authBloc = context.read<AuthBloc>();
 
           switch (value) {
             case MenuAction.logout:
@@ -50,8 +54,10 @@ class _NotesViewState extends State<NotesView> {
               devtools.log("result: $result");
 
               if (result) {
-                await AuthService.firebase().logout();
-                navigator.pushNamedAndRemoveUntil(homeRoute, (route) => false);
+                authBloc.add(const AuthEventLogout());
+
+                // await AuthService.firebase().logout();
+                // navigator.pushNamedAndRemoveUntil(homeRoute, (route) => false);
               }
               break;
             default:

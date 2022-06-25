@@ -54,6 +54,8 @@ class FirebaseAuthProvider implements AuthProvider {
     } on FirebaseAuthException catch (e) {
       final code = e.code;
 
+      print("code: $code");
+
       switch (code) {
         case "user-not-found":
           throw UserNotFoundAuthException();
