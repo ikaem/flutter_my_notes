@@ -6,6 +6,7 @@ CloseDialog showLoadingDialog({
   required BuildContext context,
   required String text,
 }) {
+  final navigator = Navigator.of(context);
   final dialog = AlertDialog(
     content: Column(
       mainAxisSize: MainAxisSize.min,
@@ -26,5 +27,5 @@ CloseDialog showLoadingDialog({
         return dialog;
       });
 
-  return () => Navigator.of(context).pop();
+  return () => navigator.pop();
 }
