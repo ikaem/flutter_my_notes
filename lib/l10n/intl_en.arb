@@ -1,0 +1,12 @@
+{
+  "my_title2": "My Title here",
+  "my_title": "{count, plural, =0{No notes} =1{1 note} other{{count} notes}}",
+  "@my_title": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3 notes"
+      }
+    }
+  }
+}

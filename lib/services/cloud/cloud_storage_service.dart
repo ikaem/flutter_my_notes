@@ -26,17 +26,17 @@ class CloudStorageService {
     );
   }
 
-  Future<Iterable<CloudNote>> getAllNotes({required String ownerId}) async {
-    // Future<List<CloudNote>> getNotes({required String ownerId}) async {
-    try {
-      final documentsQuery =
-          await notes.where(ownerIdField, isEqualTo: ownerId).get();
-      return documentsQuery.docs.map((doc) => CloudNote.fromSnapshot(doc));
-      // .toList();
-    } catch (e) {
-      throw CouldNotGetAllNotesException();
-    }
-  }
+  // Future<Iterable<CloudNote>> getAllNotes({required String ownerId}) async {
+  //   // Future<List<CloudNote>> getNotes({required String ownerId}) async {
+  //   try {
+  //     final documentsQuery =
+  //         await notes.where(ownerIdField, isEqualTo: ownerId).get();
+  //     return documentsQuery.docs.map((doc) => CloudNote.fromSnapshot(doc));
+  //     // .toList();
+  //   } catch (e) {
+  //     throw CouldNotGetAllNotesException();
+  //   }
+  // }
 
 // TODO test
   Future<CloudNote> getNote({required String id}) async {

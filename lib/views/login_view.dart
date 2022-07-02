@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mynotes/constants/routes.dart';
+import 'package:mynotes/extensions/build_context/loc.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/services/auth/bloc/auth_bloc.dart';
@@ -9,8 +10,13 @@ import 'package:mynotes/services/auth/bloc/auth_state.dart';
 import 'package:mynotes/services/dev/dev_service.dart';
 import 'package:mynotes/utilities/dialogs/error_dialog.dart';
 import 'package:mynotes/utilities/dialogs/loading_dialog.dart';
+import "package:flutter_gen/gen_l10n/app_localizations.dart";
 
 import '../utilities/show_error_dialog.dart';
+
+extension Count<T extends Iterable> on Stream<T> {
+  Stream<int> get getLength => map((event) => event.length);
+}
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -76,7 +82,9 @@ class _LoginViewState extends State<LoginView> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text("Login")),
+        // appBar: AppBar(title: const Text("Login")),
+        // appBar: AppBar(title: Text(AppLocalizations.of(context)!.my_title)),
+        appBar: AppBar(title: Text(context.loc.my_title(2))),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(

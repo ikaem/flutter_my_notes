@@ -1,0 +1,12 @@
+{
+  "my_title2": "Naslov",
+  "my_title": "{count, plural, =0{Nema biljeski} =1{1 poruka} other{{count} poruke}}",
+  "@my_title": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3 notes"
+      }
+    }
+  }
+}
